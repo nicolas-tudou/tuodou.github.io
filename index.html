@@ -13,12 +13,17 @@
       list-style: none;
       text-decoration: none;
     }
-
+    :root {
+      width: 100%;
+      height: 100%;
+    }
     body {
-      background-color: aqua;
+      width: 100%;
+      height: 100%;
+      background-image: linear-gradient(135deg,#271b38,#563d7c,#7952b3);
     }
     h1{
-      margin-top: 50px;
+      padding-top: 50px;
       text-align: center;
     }
     .wrapper {
@@ -28,6 +33,7 @@
       justify-content: center;
       align-items: center;
       width: 100%;
+      height: 260px;
     }
 
     .arithmetic,
@@ -55,6 +61,12 @@
       font-size: 20px;
       margin: 10px;
     }
+    .description {
+      width: 600px;
+      margin: 0 auto;
+      font-size: 18px;
+      font-weight: bold;
+    }
   </style>
 </head>
 
@@ -64,11 +76,19 @@
     <ul class="arithmetic">
     </ul>
   </div>
+  <p class="description">
+    快速排序是排序中很快的方法，但是属于不稳定算法，算法的性能随着数据的情况为变化。
+    该算法在不同是实现方法之间存在些许差别，此次使用原地算法实现快速排序。
+    先找到数组最右边的元素作为基准值， 定义数组第一个元素索引为标识位，表示数组中比基准值小的数的最后一位的索引，
+    当数组中标识位后面再没有比基准值小的元素时，交换标识位元素和基准值（数组的最后一位），此时基准值所在位置将整个数组
+    分为两边，递归排序两侧数组。
+  </p>
   <script src="jquery-compressed.js"></script>
   <script>
     var nodeList = document.getElementsByTagName('li');
     var randLen = Math.floor((Math.random() * 7)) + 5;
     var randList = getRandList();
+    var animateArr = [];
     function getRandList() {
       var result = [];
       for (let i = 0; i < randLen; i++) {
@@ -85,17 +105,33 @@
     // console.log(randList)
     quickOrder(randList);
     console.log(randList);
+    animateArr.forEach((ele, index) => {
+      setTimeout(() => {
+        ele();
+      }, (index + 1) * 1500)
+    })
     function exchangePosition(i, j) {
-      var domI = document.getElementById(i);
-      var domJ = document.getElementById(j);
-      [domI.style.left, domJ.style.left] = [domJ.style.left, domI.style.left];
-      [domI.id, domJ.id] = [domJ.id, domI.id];
+      animateArr.push(((i,j) => {
+        return function () {
+          console.log(i, j)
+          var domI = document.getElementById(i);
+          var domJ = document.getElementById(j);
+          var iL = domI.style.left;
+          var jL = domJ.style.left;
+          $(domI).animate({top: 70}, 300).animate({left: jL}, 300).animate({top: 0}, 300);
+          $(domJ).animate({top: 70}, 300).animate({left: iL}, 300).animate({top: 0}, 300, function() {
+            [domI.id, domJ.id] = [domJ.id, domI.id]
+          });
+          // [domI.style.left, domJ.style.left] = [domJ.style.left, domI.style.left];
+        }
+      })(i, j))
     }
 
     function quickOrder(arr) {
       function swapItem(i, j) {
         if(i !== j) {
           [arr[i], arr[j]] = [arr[j], arr[i]];
+          console.log('***' + i, j)
           exchangePosition(i, j);
         }
       }
