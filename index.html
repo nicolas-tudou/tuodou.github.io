@@ -1,145 +1,205 @@
 <!DOCTYPE html>
+<html lang="en">
+
 <head>
-  <title>myVue</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>tudou</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      text-decoration: none;
+    }
+
+    body {
+      background-color: aqua;
+    }
+    h1{
+      margin-top: 50px;
+      text-align: center;
+    }
+    .wrapper {
+      margin-top: 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+
+    .arithmetic,
+    .sortedlist {
+      position: relative;
+      font-size: 0;
+      background-color: #777;
+    }
+    .baseitem{
+      background-color: red;
+    }
+    .sorteditem {
+      background-color: lime;
+    }
+
+    li {
+      position: absolute;
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #eee;
+      text-align: center;
+      line-height: 50px;
+      font-size: 20px;
+      margin: 10px;
+    }
+  </style>
 </head>
-<style>
-  #app {
-    text-align: center;
-  }
-</style>
+
 <body>
-  <div id="app">
-    <form>
-      <input type="text"  v-model="number">
-      <button type="button" v-click="increment">增加</button>
-    </form>
-    <h3 v-bind="number"></h3>
+  <h1>快速排序算法</h1>
+  <div class="wrapper">
+    <ul class="arithmetic">
+    </ul>
   </div>
-</body>
+  <script src="jquery-compressed.js"></script>
+  <script>
+    var nodeList = document.getElementsByTagName('li');
+    var randLen = Math.floor((Math.random() * 7)) + 5;
+    var randList = getRandList();
+    function getRandList() {
+      var result = [];
+      for (let i = 0; i < randLen; i++) {
+        var temp = Math.floor(Math.random() * 100);
+        var node = document.createElement('li');
+        node.innerHTML = temp;
+        node.id = i;
+        node.style.left = (i - parseInt(randLen / 2)) * 70 + 'px';
+        document.getElementsByClassName('arithmetic')[0].appendChild(node);
+        result.push(temp);
+      }
+      return result;
+    }
+    // console.log(randList)
+    quickOrder(randList);
+    console.log(randList);
+    function exchangePosition(i, j) {
+      var domI = document.getElementById(i);
+      var domJ = document.getElementById(j);
+      [domI.style.left, domJ.style.left] = [domJ.style.left, domI.style.left];
+      [domI.id, domJ.id] = [domJ.id, domI.id];
+    }
 
-<script>
-  function myVue(options) {
-    this._init(options);
-  }
-
-  myVue.prototype._init = function (options) {
-    this.$options = options;
-    this.$el = document.querySelector(options.el);
-    this.$data = options.data;
-    this.$methods = options.methods;
-
-    this._binding = {};
-    this._obverse(this.$data);
-    this._complie(this.$el);
-  }
- 
-  myVue.prototype._obverse = function (obj) {
-    var value;
-    for (key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        this._binding[key] = {                                                                                                                                                          
-          _directives: []
-        };
-        value = obj[key];
-        if (typeof value === 'object') {
-          this._obverse(value);
+    function quickOrder(arr) {
+      function swapItem(i, j) {
+        if(i !== j) {
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+          exchangePosition(i, j);
         }
-        var binding = this._binding[key];
-        Object.defineProperty(this.$data, key, {
-          enumerable: true,
-          configurable: true,
-          get: function () {
-            console.log(`获取${value}`);
-            return value;
-          },
-          set: function (newVal) {
-            console.log(`更新${newVal}`);
-            if (value !== newVal) {
-              value = newVal;
-              binding._directives.forEach(function (item) {
-                item.update();
-              })
-            }
+      }
+      function getMidIndex(left, right) {
+        var storeIndex = left; //标记此次确定的正确排序位置
+        for(var i = left; i < right; i ++) {
+          if(arr[i] < arr[right]) {
+            swapItem(storeIndex, i);
+            storeIndex ++;
           }
-        })
+        }
+        swapItem(storeIndex, right);
+        return storeIndex;
       }
+      function sort(left, right) {
+        if(right <= left) {
+          return ;
+        }
+        var mid = getMidIndex(left, right);
+        sort(left, mid - 1);
+        sort(mid + 1, right);
+      }
+      sort(0, arr.length - 1);
+      return arr;
     }
-  }
 
-  myVue.prototype._complie = function (root) {
-    var _this = this;
-    var nodes = root.children;
-    for (var i = 0; i < nodes.length; i++) {
-      var node = nodes[i];
-      if (node.children.length) {
-        this._complie(node);
-      }
+    //创建数组实现 浪费空间 但是代码简单易懂
+    // function quickOrder(arr) {
+    //  if(arr.length <= 1) {
+    //    return arr;
+    //  }
+    //  var flag = arr.splice(0, 1);
+    //  var left = [];
+    //  var right = [];
+    //  for(var i = 0; i < arr.length; i ++) {
+    //    if(arr[i] < flag) {
+    //      left.push(arr[i]);
+    //    }else {
+    //      right.push(arr[i]);
+    //    }
+    //  }
+    //  return quickOrder(left).concat(flag, quickOrder(right));
+    // };
 
-      if (node.hasAttribute('v-click')) {
-        node.onclick = (function () {
-          var attrVal = nodes[i].getAttribute('v-click');
-          return _this.$methods[attrVal].bind(_this.$data);
-        })();
-      }
+    //原地算法 in-place
+    // function quickOrder(arr) {
+    //   function swapItem(i, j) {
+    //     // var temp = arr[i];
+    //     // arr[i] = arr[j];
+    //     // arr[j] = temp;
+    //     [arr[i], arr[j]] = [arr[j], arr[i]];
+    //   }
+    //   function getMidIndex(left, right) {
+    //     var storeIndex = left; //标记此次确定的正确排序位置
+    //     for(var i = left; i < right; i ++) {
+    //       if(arr[i] < arr[right]) {
+    //         swapItem(storeIndex, i);
+    //         storeIndex ++;
+    //       }
+    //     }
+    //     swapItem(storeIndex, right);
+    //     return storeIndex;
+    //   }
+    //   function sort(left, right) {
+    //     if(right <= left) {
+    //       return ;
+    //     }
+    //     var mid = getMidIndex(left, right);
+    //     sort(left, mid - 1);
+    //     sort(mid + 1, right);
+    //   }
+    //   sort(0, arr.length - 1);
+    //   return arr;
+    // }
 
-      if (node.hasAttribute('v-model') && (node.tagName == 'INPUT' || node.tagName == 'TEXTAREA')) {
-        node.addEventListener('input', (function(key) {
-          var attrVal = node.getAttribute('v-model');
-          _this._binding[attrVal]._directives.push(new Watcher(
-            'input',
-            node,
-            _this,
-            attrVal,
-            'value'
-          ))
 
-          return function() {
-            _this.$data[attrVal] =  nodes[key].value;
-          }
-        })(i));
-      } 
-
-      if (node.hasAttribute('v-bind')) {
-        var attrVal = node.getAttribute('v-bind');
-        _this._binding[attrVal]._directives.push(new Watcher(
-          'text',
-          node,
-          _this,
-          attrVal,
-          'innerHTML'
-        ))
-      }
-    }
-  }
-
-  function Watcher(name, el, vm, exp, attr) {
-    this.name = name;         //指令名称，例如文本节点，该值设为"text"
-    this.el = el;             //指令对应的DOM元素
-    this.vm = vm;             //指令所属myVue实例
-    this.exp = exp;           //指令对应的值，本例如"number"
-    this.attr = attr;         //绑定的属性值，本例为"innerHTML"
-
-    this.update();
-  }
-
-  Watcher.prototype.update = function () {
-    this.el[this.attr] = this.vm.$data[this.exp];
-  }
-
-  window.onload = function() {
-    var app = new myVue({
-      el:'#app',
-      data: {
-        number: 0
-      },
-      methods: {
-        increment: function() {
-          this.number ++;
-        },
-      }
-    })
-  }
-</script>
-
+    // function quickSort(array) {
+    //   function sort(prev, numsize) {
+    //     var nonius = prev;
+    //     var j = numsize - 1;
+    //     var flag = array[prev];
+    //     if ((numsize - prev) > 1) {
+    //       while (nonius < j) {
+    //         for (; nonius < j; j--) {
+    //           if (array[j] < flag) {
+    //             array[nonius++] = array[j];　//a[i] = a[j]; i += 1;
+    //             break;
+    //           };
+    //         }
+    //         for (; nonius < j; nonius++) {
+    //           if (array[nonius] > flag) {
+    //             array[j--] = array[nonius];
+    //             break;
+    //           }
+    //         }
+    //       }
+    //       array[nonius] = flag;
+    //       sort(0, nonius);
+    //       sort(nonius + 1, numsize);
+    //     }
+    //   }
+    //   sort(0, array.length);
+    //   return array;
+    // }
+  </script>
 </body>
-</html> 
+</html>
